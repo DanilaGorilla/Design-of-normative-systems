@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class Delivery {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -110,6 +111,40 @@ public class Delivery {
     public void setArrivalDate(LocalDate arrivalDate) {
         this.arrivalDate = validateArrivalDate(arrivalDate, this.departureDate);
     }
+    //полный объект
+    @Override
+    public String toString() {
+        return "Delivery {" +
+                "deliveryId=" + deliveryId +
+                ", routeId=" + routeId +
+                ", driverId=" + driverId +
+                ", departureDate=" + departureDate +
+                ", arrivalDate=" + arrivalDate +
+                '}';
+    }
+
+    //краткий объект
+    public String toShortString() {
+        return "Delivery{" +
+                "id=" + deliveryId +
+                ", route=" + routeId +
+                ", departure=" + departureDate +
+                ", arrival=" + arrivalDate +
+                '}';
+    }
+
+    //сравнение
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Delivery)) return false;
+        Delivery delivery = (Delivery) o;
+        return deliveryId == delivery.deliveryId &&
+                routeId == delivery.routeId &&
+                driverId == delivery.driverId &&
+                Objects.equals(departureDate, delivery.departureDate) &&
+                Objects.equals(arrivalDate, delivery.arrivalDate);
+    }
 
     public static class LocalDateAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
         @Override
@@ -121,4 +156,5 @@ public class Delivery {
             return LocalDate.parse(json.getAsString(), DATE_FORMAT);
         }
     }
+
 }
