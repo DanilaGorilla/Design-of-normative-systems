@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Objects;
 
 public class Driver {
     private int driverId;
@@ -31,7 +32,7 @@ public class Driver {
         this.payment = payment;
     }
 
-    //CSV
+    // CSV
     public Driver(String csv) {
         if (csv == null || csv.isBlank()) {
             throw new IllegalArgumentException("CSV строка не может быть пустой");
@@ -63,7 +64,7 @@ public class Driver {
         this.payment = parsedPayment;
     }
 
-    //JSON
+    // JSON
     public Driver(String jsonFilePath, boolean isJsonFile) throws IOException {
         if (!isJsonFile) {
             throw new IllegalArgumentException("Для CSV используйте другой конструктор");
@@ -153,5 +154,46 @@ public class Driver {
         if (payment < 0) {
             throw new IllegalArgumentException("Оплата не может быть отрицательной");
         }
+    }
+
+    //Полная
+    @Override
+    public String toString() {
+        return "Driver{" +
+                "driverId=" + driverId +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", experience=" + experience +
+                ", payment=" + payment +
+                '}';
+    }
+
+    //Краткая
+    public String toShortString() {
+        return "Driver{" +
+                "driverId=" + driverId +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
+    }
+
+    //Сравнение
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Driver driver)) return false;
+        return driverId == driver.driverId &&
+                experience == driver.experience &&
+                Double.compare(driver.payment, payment) == 0 &&
+                Objects.equals(firstName, driver.firstName) &&
+                Objects.equals(middleName, driver.middleName) &&
+                Objects.equals(lastName, driver.lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(driverId, firstName, middleName, lastName, experience, payment);
     }
 }
