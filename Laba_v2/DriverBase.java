@@ -7,15 +7,24 @@ public class DriverBase {
     protected String lastName;
 
     public DriverBase(String firstName, String middleName, String lastName) {
-        Driver.validateName(firstName, "Имя");
-        Driver.validateName(middleName, "Отчество");
-        Driver.validateName(lastName, "Фамилия");
+        validateName(firstName, "Имя");
+        validateName(middleName, "Отчество");
+        validateName(lastName, "Фамилия");
 
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
     }
 
+    // Общая валидация ФИО
+    protected static void validateName(String name, String fieldName) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " не может быть пустым");
+        }
+        if (!name.matches("[A-Za-zА-Яа-яЁё\\-]+")) {
+            throw new IllegalArgumentException(fieldName + " содержит недопустимые символы");
+        }
+    }
 
     public String getFirstName() {
         return firstName;
@@ -28,8 +37,9 @@ public class DriverBase {
     public String getLastName() {
         return lastName;
     }
-    @Override
-    public String toString() {
+
+    // Краткая версия
+    public String toShortString() {
         return "DriverBase{" +
                 "firstName='" + firstName + '\'' +
                 ", middleName='" + middleName + '\'' +
