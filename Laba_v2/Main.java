@@ -20,7 +20,6 @@ public class Main {
             scanner.nextLine();
 
             Driver driver = null;
-
             switch (choice) {
                 case 1 -> {
                     System.out.print("Введите ID водителя (целое число): ");
@@ -43,6 +42,7 @@ public class Main {
                     double payment = scanner.nextDouble();
 
                     driver = new Driver(driverId, firstName, middleName, lastName, experience, payment);
+                    DriverBase driverbase = new DriverBase(firstName, middleName, lastName);
                 }
                 case 2 -> {
                     System.out.print("Введите CSV строку (формат: id,имя,отчество,фамилия,опыт,оплата): ");
@@ -60,14 +60,13 @@ public class Main {
                 }
             }
 
-            // вывод информации
             System.out.println("\nВодитель успешно создан!");
 
             System.out.println("\n=== Полная версия объекта ===");
-            System.out.println(driver.toString());
+            System.out.println(driver.toString()); // из Driver
 
             System.out.println("\n=== Краткая версия объекта ===");
-            System.out.println(driver.toShortString());
+            System.out.println(driver.toShortString()); // из DriverBase
 
             // сравнение объектов (создадим копию для примера)
             Driver driverCopy = new Driver(driver.getDriverId(), driver.getFirstName(),
