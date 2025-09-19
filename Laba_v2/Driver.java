@@ -9,31 +9,24 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Objects;
 
-public class Driver {
+public class Driver extends DriverBase {
     private int driverId;
-    private String firstName;
-    private String middleName;
-    private String lastName;
     private int experience; // в годах
     private double payment;
 
     public Driver(int driverId, String firstName, String middleName, String lastName, int experience, double payment) {
-        validateName(firstName, "Имя");
-        validateName(middleName, "Отчество");
-        validateName(lastName, "Фамилия");
+        super(firstName, middleName, lastName); // используем конструктор родителя
         validateExperience(experience);
         validatePayment(payment);
 
         this.driverId = driverId;
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
         this.experience = experience;
         this.payment = payment;
     }
 
     // CSV
     public Driver(String csv) {
+        super("", "", ""); // временно, потом перезапишем поля
         if (csv == null || csv.isBlank()) {
             throw new IllegalArgumentException("CSV строка не может быть пустой");
         }
@@ -43,29 +36,23 @@ public class Driver {
                     "CSV строка должна содержать 6 полей: driverId, firstName, middleName, lastName, experience, payment");
         }
 
-        int parsedDriverId = Integer.parseInt(parts[0].trim());
-        String parsedFirstName = parts[1].trim();
-        String parsedMiddleName = parts[2].trim();
-        String parsedLastName = parts[3].trim();
-        int parsedExperience = Integer.parseInt(parts[4].trim());
-        double parsedPayment = Double.parseDouble(parts[5].trim());
+        this.driverId = Integer.parseInt(parts[0].trim());
+        this.firstName = parts[1].trim();
+        this.middleName = parts[2].trim();
+        this.lastName = parts[3].trim();
+        this.experience = Integer.parseInt(parts[4].trim());
+        this.payment = Double.parseDouble(parts[5].trim());
 
-        validateName(parsedFirstName, "Имя");
-        validateName(parsedMiddleName, "Отчество");
-        validateName(parsedLastName, "Фамилия");
-        validateExperience(parsedExperience);
-        validatePayment(parsedPayment);
-
-        this.driverId = parsedDriverId;
-        this.firstName = parsedFirstName;
-        this.middleName = parsedMiddleName;
-        this.lastName = parsedLastName;
-        this.experience = parsedExperience;
-        this.payment = parsedPayment;
+        validateName(firstName, "Имя");
+        validateName(middleName, "Отчество");
+        validateName(lastName, "Фамилия");
+        validateExperience(experience);
+        validatePayment(payment);
     }
 
     // JSON
     public Driver(String jsonFilePath, boolean isJsonFile) throws IOException {
+        super("", "", ""); // временно, потом перезапишем поля
         if (!isJsonFile) {
             throw new IllegalArgumentException("Для CSV используйте другой конструктор");
         }
@@ -95,30 +82,6 @@ public class Driver {
         return driverId;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getMiddleName() {
-        return middleName;
-    }
-
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public int getExperience() {
         return experience;
     }
@@ -135,15 +98,6 @@ public class Driver {
         this.payment = payment;
     }
 
-    public static void validateName(String name, String fieldName) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException(fieldName + " не может быть пустым");
-        }
-        if (!name.matches("[A-Za-zА-Яа-яЁё\\-]+")) {
-            throw new IllegalArgumentException(fieldName + " содержит недопустимые символы");
-        }
-    }
-
     public static void validateExperience(int experience) {
         if (experience < 0) {
             throw new IllegalArgumentException("Опыт работы не может быть отрицательным");
@@ -156,30 +110,20 @@ public class Driver {
         }
     }
 
-    //Полная
+    // Полная версия
     @Override
     public String toString() {
         return "Driver{" +
                 "driverId=" + driverId +
+                ", lastName='" + lastName + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", middleName='" + middleName + '\'' +
-                ", lastName='" + lastName + '\'' +
                 ", experience=" + experience +
                 ", payment=" + payment +
                 '}';
     }
 
-    //Краткая
-    public String toShortString() {
-        return "Driver{" +
-                "driverId=" + driverId +
-                ", firstName='" + firstName + '\'' +
-                ", middleName='" + middleName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                '}';
-    }
-
-    //Сравнение
+    // Сравнение
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -190,10 +134,5 @@ public class Driver {
                 Objects.equals(firstName, driver.firstName) &&
                 Objects.equals(middleName, driver.middleName) &&
                 Objects.equals(lastName, driver.lastName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(driverId, firstName, middleName, lastName, experience, payment);
     }
 }
