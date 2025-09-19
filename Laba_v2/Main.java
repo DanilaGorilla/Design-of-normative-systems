@@ -60,11 +60,27 @@ public class Main {
                 }
             }
 
-            System.out.println("Водитель успешно создан!");
-            System.out.println("ID: " + driver.getDriverId());
-            System.out.println("ФИО: " + driver.getLastName() + " " + driver.getFirstName() + " " + driver.getMiddleName());
-            System.out.println("Опыт: " + driver.getExperience() + " лет");
-            System.out.println("Оплата: " + driver.getPayment() + " руб.");
+            // вывод информации
+            System.out.println("\nВодитель успешно создан!");
+
+            System.out.println("\n=== Полная версия объекта ===");
+            System.out.println(driver.toString());
+
+            System.out.println("\n=== Краткая версия объекта ===");
+            System.out.println(driver.toShortString());
+
+            // сравнение объектов (создадим копию для примера)
+            Driver driverCopy = new Driver(driver.getDriverId(), driver.getFirstName(),
+                    driver.getMiddleName(), driver.getLastName(),
+                    driver.getExperience(), driver.getPayment());
+
+            System.out.println("\n=== Сравнение объектов ===");
+            if (driver.equals(driverCopy)) {
+                System.out.println("Водители равны (содержат одинаковые данные).");
+            } else {
+                System.out.println("Водители разные.");
+            }
+
         } catch (IllegalArgumentException e) {
             System.out.println("Ошибка: " + e.getMessage());
         } catch (Exception e) {
