@@ -9,15 +9,17 @@ public class Main2_2 {
     public static void main(String[] args) {
         System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
         Scanner scanner = new Scanner(System.in);
-        MyDriver_rep_DB repo = new MyDriver_rep_DB("");
+
+        // Работаем через адаптер, а не напрямую с MyDriver_rep_DB
+        MyDriver_rep_DB_Adapter repo = new MyDriver_rep_DB_Adapter("");
 
         try {
-            System.out.println("\n=== МЕНЮ УПРАВЛЕНИЯ ВОДИТЕЛЯМИ (Postgres) ===");
+            System.out.println("\n=== МЕНЮ УПРАВЛЕНИЯ ВОДИТЕЛЯМИ (PostgreSQL) ===");
 
             while (true) {
                 System.out.println("\nВыберите действие:");
-                System.out.println("1 - Показать всех водителей (ограниченный список)");
-                System.out.println("2 - Получить водителя по ID");
+                System.out.println("1 - Показать список водителей (постранично)");
+                System.out.println("2 - Найти водителя по ID");
                 System.out.println("3 - Добавить нового водителя");
                 System.out.println("4 - Изменить данные водителя по ID");
                 System.out.println("5 - Удалить водителя по ID");
@@ -41,7 +43,9 @@ public class Main2_2 {
                             System.out.println("Список пуст.");
                         } else {
                             System.out.println("\n=== Список водителей ===");
-                            drivers.forEach(System.out::println);
+                            for (Driver d : drivers) {
+                                System.out.println(d.toString());
+                            }
                         }
                     }
 
@@ -52,7 +56,8 @@ public class Main2_2 {
 
                         Driver driver = repo.getById(id);
                         if (driver != null) {
-                            System.out.println(driver);
+                            System.out.println("\nНайден водитель:");
+                            System.out.println(driver.toString());
                         } else {
                             System.out.println("Водитель с таким ID не найден.");
                         }
@@ -77,10 +82,11 @@ public class Main2_2 {
 
                         Driver newDriver = new Driver(0, firstName, middleName, lastName, experience, payment);
                         repo.addDriver(newDriver);
+                        System.out.println("Водитель успешно добавлен в базу данных!");
                     }
 
                     case 4 -> {
-                        System.out.print("Введите ID водителя для замены: ");
+                        System.out.print("Введите ID водителя для изменения: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
 
@@ -136,6 +142,7 @@ public class Main2_2 {
             }
         } catch (Exception e) {
             System.out.println("Ошибка: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             scanner.close();
         }
