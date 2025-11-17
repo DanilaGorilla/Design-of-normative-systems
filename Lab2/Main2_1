@@ -4,12 +4,17 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Predicate;
+import java.util.Comparator;
 
 public class Main2_1 {
     public static void main(String[] args) {
         System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
         Scanner scanner = new Scanner(System.in);
-        MyDriver_rep_yaml repo = new MyDriver_rep_yaml("src/main/java/org/example/drivers.yaml");
+
+        //оборачиваем YAML репозиторий в декоратор
+        MyDriver_rep_yaml yamlRepo = new MyDriver_rep_yaml("src/main/java/org/example/drivers.yaml");
+        FileRepositoryFilterSortDecorator repo = new FileRepositoryFilterSortDecorator(yamlRepo);
 
         while (true) {
             System.out.println("\n=== МЕНЮ УПРАВЛЕНИЯ ВОДИТЕЛЯМИ (YAML) ===");
@@ -21,11 +26,13 @@ public class Main2_1 {
             System.out.println("6. Сортировать по опыту");
             System.out.println("7. Получить часть списка (пагинация)");
             System.out.println("8. Показать количество водителей");
+            System.out.println("9. Показать список с фильтрацией и сортировкой");
+            System.out.println("10. Показать количество водителей с фильтром");
             System.out.println("0. Выход");
             System.out.print("Выберите действие: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // очистка буфера
+            scanner.nextLine();
 
             switch (choice) {
                 case 1 -> {
@@ -48,8 +55,10 @@ public class Main2_1 {
                     System.out.print("Оплата (в рублях): ");
                     double payment = scanner.nextDouble();
 
-                    repo.addDriver(new Driver(0, firstName, middleName, lastName, experience, payment));
-                    System.out.println("Водитель успешно добавлен!");
+                    boolean added = repo.addDriver(new Driver(0, firstName, middleName, lastName, experience, payment));
+                    if (added) {
+                        System.out.println("Водитель успешно добавлен!");
+                    }
                 }
                 case 3 -> {
                     System.out.print("Введите ID водителя: ");
@@ -65,8 +74,11 @@ public class Main2_1 {
                     System.out.print("Введите ID водителя для удаления: ");
                     int id = scanner.nextInt();
                     boolean deleted = repo.deleteById(id);
-                    if (deleted) System.out.println("Водитель удалён.");
-                    else System.out.println("Водитель с таким ID не найден.");
+                    if (deleted) {
+                        System.out.println("Водитель удалён.");
+                    } else {
+                        System.out.println("Водитель с таким ID не найден.");
+                    }
                 }
                 case 5 -> {
                     System.out.print("Введите ID водителя для замены: ");
@@ -89,13 +101,21 @@ public class Main2_1 {
                     double payment = scanner.nextDouble();
 
                     boolean replaced = repo.replaceById(id, new Driver(id, firstName, middleName, lastName, experience, payment));
-                    if (replaced) System.out.println("Водитель успешно заменён.");
-                    else System.out.println("Водитель с таким ID не найден.");
+                    if (replaced) {
+                        System.out.println("Водитель успешно заменён.");
+                    } else {
+                        System.out.println("Водитель с таким ID не найден или данные совпадают с существующим водителем.");
+                    }
                 }
                 case 6 -> {
-                    repo.sortByExperience();
+                    List<Driver> sortedDrivers = repo.get_k_n_short_list(
+                            repo.getCount(),
+                            1,
+                            null,
+                            Comparator.comparingInt(Driver::getExperience) // сортировка по опыту
+                    );
                     System.out.println("Список отсортирован по опыту.");
-                    repo.printAll();
+                    sortedDrivers.forEach(System.out::println);
                 }
                 case 7 -> {
                     System.out.print("Введите размер страницы (k): ");
@@ -113,6 +133,31 @@ public class Main2_1 {
                 }
                 case 8 -> {
                     System.out.println("Всего водителей: " + repo.getCount());
+                }
+                case 9 -> {
+                    System.out.print("Введите количество элементов на странице (k): ");
+                    int k = scanner.nextInt();
+                    System.out.print("Введите номер страницы (n): ");
+                    int n = scanner.nextInt();
+                    scanner.nextLine();
+
+                    Predicate<Driver> filter = driver -> driver.getExperience() > 3;
+                    Comparator<Driver> sorter = Comparator.comparingDouble(Driver::getPayment).reversed();
+
+                    List<Driver> drivers = repo.get_k_n_short_list(k, n, filter, sorter);
+                    if (drivers.isEmpty()) {
+                        System.out.println("Список пуст.");
+                    } else {
+                        System.out.println("\n=== Отфильтрованный и отсортированный список водителей ===");
+                        for (Driver d : drivers) {
+                            System.out.println(d.toString());
+                        }
+                    }
+                }
+                case 10 -> {
+                    Predicate<Driver> filter = driver -> driver.getPayment() > 30000;
+                    int count = repo.getCount(filter);
+                    System.out.println("Водителей с зарплатой более 30000: " + count);
                 }
                 case 0 -> {
                     System.out.println("Выход из программы...");
