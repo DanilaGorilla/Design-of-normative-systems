@@ -1,0 +1,34 @@
+package org.example.web.controller;
+
+import org.example.Driver;
+import org.example.web.view.DriverDetailView;
+
+//Контроллер для отображения детальной информации о водителе.
+// Использую паттерн Наблюдатель для получения данных
+
+public class DriverViewController {
+    private final Driver driver;
+    private DriverDetailView view;
+
+    public DriverViewController(Driver driver) {
+        this.driver = driver;
+    }
+
+    public void show() {
+        if (view == null) {
+            view = new DriverDetailView(this);
+        }
+        view.setVisible(true);
+        view.displayDriverDetails(driver);
+    }
+
+    public void onClose() {
+        if (view != null) {
+            view.dispose();
+        }
+    }
+
+    public Driver getDriver() {
+        return driver;
+    }
+}
