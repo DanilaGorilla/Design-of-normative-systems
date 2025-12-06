@@ -1,0 +1,159 @@
+// web/view/MainView.java
+package org.example.web.view;
+
+import org.example.Driver;
+import org.example.web.controller.MainController;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class MainView extends JFrame {
+    private final MainController controller;
+    private JTable driversTable;
+    private DefaultTableModel tableModel;
+    private JButton addButton;
+    private JButton refreshButton;
+    private JLabel statusLabel;
+
+    public MainView(MainController controller) {
+        this.controller = controller;
+        initComponents();
+        setupLayout();
+        setupListeners();
+    }
+
+    private void initComponents() {
+        setTitle("Управление водителями");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+
+        // Модель таблицы
+        String[] columns = {"ID", "Фамилия", "Имя", "Отчество", "Опыт", "Оплата", "Действия"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Запрещаем редактирование напрямую в таблице
+            }
+        };
+
+        driversTable = new JTable(tableModel);
+
+        // Кнопки
+        addButton = new JButton("Добавить водителя");
+        refreshButton = new JButton("Обновить");
+
+        // Статус
+        statusLabel = new JLabel("Готово");
+    }
+
+    private void setupLayout() {
+        setLayout(new BorderLayout());
+
+        // Панель управления
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        controlPanel.add(addButton);
+        controlPanel.add(refreshButton);
+        controlPanel.add(new JLabel("Фильтр:"));
+        controlPanel.add(new JTextField(15));
+        controlPanel.add(new JLabel("Сортировка:"));
+        JComboBox<String> sortCombo = new JComboBox<>(new String[]{"По ID", "По фамилии", "По опыту", "По оплате"});
+        controlPanel.add(sortCombo);
+
+        // Таблица с прокруткой
+        JScrollPane tableScrollPane = new JScrollPane(driversTable);
+
+        // Статус бар
+        JPanel statusPanel = new JPanel(new BorderLayout());
+        statusPanel.add(statusLabel, BorderLayout.WEST);
+
+        add(controlPanel, BorderLayout.NORTH);
+        add(tableScrollPane, BorderLayout.CENTER);
+        add(statusPanel, BorderLayout.SOUTH);
+    }
+
+    private void setupListeners() {
+        // Обработчики передают события контроллеру
+        addButton.addActionListener(e -> controller.onAddDriver());
+        refreshButton.addActionListener(e -> controller.onViewDriverDetails(1)); // Пример
+
+        // Двойной клик по таблице - просмотр деталей
+        driversTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    int row = driversTable.getSelectedRow();
+                    if (row >= 0) {
+                        int driverId = (int) tableModel.getValueAt(row, 0);
+                        controller.onViewDriverDetails(driverId);
+                    }
+                }
+            }
+        });
+    }
+
+    // Методы для обновления UI (вызываются контроллером)
+    public void displayDrivers(List<Driver> drivers) {
+        SwingUtilities.invokeLater(() -> {
+            tableModel.setRowCount(0); // Очищаем таблицу
+
+            for (Driver driver : drivers) {
+                Object[] row = {
+                        driver.getDriverId(),
+                        driver.getLastName(),
+                        driver.getFirstName(),
+                        driver.getMiddleName(),
+                        driver.getExperience(),
+                        driver.getPayment(),
+                        "Действия" // Кнопки будут добавлены отдельно
+                };
+                tableModel.addRow(row);
+            }
+
+            statusLabel.setText("Загружено " + drivers.size() + " записей");
+        });
+    }
+
+    public void addDriverToTable(Driver driver) {
+        SwingUtilities.invokeLater(() -> {
+            Object[] row = {
+                    driver.getDriverId(),
+                    driver.getLastName(),
+                    driver.getFirstName(),
+                    driver.getMiddleName(),
+                    driver.getExperience(),
+                    driver.getPayment(),
+                    "Действия"
+            };
+            tableModel.addRow(row);
+            statusLabel.setText("Добавлен новый водитель: " + driver.getLastName());
+        });
+    }
+
+    public void updateDriverInTable(Driver driver) {
+        SwingUtilities.invokeLater(() -> {
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                if ((int) tableModel.getValueAt(i, 0) == driver.getDriverId()) {
+                    tableModel.setValueAt(driver.getLastName(), i, 1);
+                    tableModel.setValueAt(driver.getFirstName(), i, 2);
+                    tableModel.setValueAt(driver.getMiddleName(), i, 3);
+                    tableModel.setValueAt(driver.getExperience(), i, 4);
+                    tableModel.setValueAt(driver.getPayment(), i, 5);
+                    break;
+                }
+            }
+            statusLabel.setText("Обновлен водитель: " + driver.getLastName());
+        });
+    }
+
+    public void removeDriverFromTable(int driverId) {
+        SwingUtilities.invokeLater(() -> {
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                if ((int) tableModel.getValueAt(i, 0) == driverId) {
+                    tableModel.removeRow(i);
+                    break;
+                }
+            }
+            statusLabel.setText("Удален водитель с ID: " + driverId);
+        });
+    }
+}
