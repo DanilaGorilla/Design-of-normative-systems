@@ -1,0 +1,85 @@
+// web/view/DriverDetailView.java
+package org.example.web.view;
+
+import org.example.Driver;
+import org.example.web.controller.DriverViewController;
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * Окно детального просмотра информации о водителе
+ */
+public class DriverDetailView extends JDialog {
+    private final DriverViewController controller;
+    private JLabel idLabel;
+    private JLabel lastNameLabel;
+    private JLabel firstNameLabel;
+    private JLabel middleNameLabel;
+    private JLabel experienceLabel;
+    private JLabel paymentLabel;
+    private JButton closeButton;
+
+    public DriverDetailView(DriverViewController controller) {
+        super((Frame) null, "Детальная информация о водителе", true);
+        this.controller = controller;
+        initComponents();
+        setupLayout();
+        setupListeners();
+    }
+
+    private void initComponents() {
+        setSize(400, 300);
+        setLocationRelativeTo(null);
+
+        idLabel = new JLabel();
+        lastNameLabel = new JLabel();
+        firstNameLabel = new JLabel();
+        middleNameLabel = new JLabel();
+        experienceLabel = new JLabel();
+        paymentLabel = new JLabel();
+
+        closeButton = new JButton("Закрыть");
+    }
+
+    private void setupLayout() {
+        setLayout(new BorderLayout());
+
+        JPanel infoPanel = new JPanel(new GridLayout(6, 2, 10, 10));
+        infoPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        infoPanel.add(new JLabel("ID:"));
+        infoPanel.add(idLabel);
+        infoPanel.add(new JLabel("Фамилия:"));
+        infoPanel.add(lastNameLabel);
+        infoPanel.add(new JLabel("Имя:"));
+        infoPanel.add(firstNameLabel);
+        infoPanel.add(new JLabel("Отчество:"));
+        infoPanel.add(middleNameLabel);
+        infoPanel.add(new JLabel("Опыт (лет):"));
+        infoPanel.add(experienceLabel);
+        infoPanel.add(new JLabel("Оплата (руб):"));
+        infoPanel.add(paymentLabel);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(closeButton);
+
+        add(infoPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private void setupListeners() {
+        closeButton.addActionListener(e -> {
+            controller.onClose();
+            dispose();
+        });
+    }
+
+    public void displayDriverDetails(Driver driver) {
+        idLabel.setText(String.valueOf(driver.getDriverId()));
+        lastNameLabel.setText(driver.getLastName());
+        firstNameLabel.setText(driver.getFirstName());
+        middleNameLabel.setText(driver.getMiddleName());
+        experienceLabel.setText(String.valueOf(driver.getExperience()));
+        paymentLabel.setText(String.format("%.2f", driver.getPayment()));
+    }
+}
