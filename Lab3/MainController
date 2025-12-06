@@ -1,0 +1,95 @@
+// web/controller/MainController.java
+package org.example.web.controller;
+
+import org.example.Driver;
+import org.example.config.AppConfig;
+import org.example.observer.DriverDataSubscriber;
+import org.example.web.view.MainView;
+import java.util.List;
+
+// Контроллер главного окна (MVC - Controller).Содержит всю бизнес-логику, View только отображает
+public class MainController implements DriverDataSubscriber {
+    private final MainView view;
+    private final AppConfig config;
+
+    public MainController() {
+        this.config = new AppConfig();
+        this.view = new MainView(this);
+
+        // Регистрируем себя как подписчика на изменения данных
+        config.getDriverPublisher().subscribe(this);
+
+        // Инициализация данных
+        loadInitialData();
+    }
+
+    private void loadInitialData() {
+        // Загружаем первые 20 записей для отображения
+        List<Driver> drivers = config.getDriverRepository().get_k_n_short_list(20, 1);
+        view.displayDrivers(drivers);
+
+        // Уведомляем издателя о текущих данных
+        config.getDriverPublisher().notifyDataChanged(drivers);
+    }
+
+    // Методы, вызываемые View (действия пользователя)
+    public void onViewDriverDetails(int driverId) {
+        Driver driver = config.getDriverRepository().getById(driverId);
+        if (driver != null) {
+            // Создаем контроллер для детального просмотра
+            DriverViewController detailController = new DriverViewController(driver);
+            detailController.show();
+        }
+    }
+
+    public void onAddDriver() {
+        // Будет реализовано в пункте 2
+        System.out.println("Добавление водителя - будет реализовано в пункте 2");
+    }
+
+    public void onEditDriver(int driverId) {
+        // Будет реализовано в пункте 3
+        System.out.println("Редактирование водителя - будет реализовано в пункте 3");
+    }
+
+    public void onDeleteDriver(int driverId) {
+        // Будет реализовано в пункте 5
+        System.out.println("Удаление водителя - будет реализовано в пункте 5");
+    }
+
+    public void onFilterChanged(String filterCriteria) {
+        // Будет реализовано в пункте 6
+        System.out.println("Фильтрация - будет реализовано в пункте 6");
+    }
+
+    public void onSortChanged(String sortField) {
+        // Будет реализовано в пункте 7
+        System.out.println("Сортировка - будет реализовано в пункте 7");
+    }
+
+    // Реализация методов интерфейса DriverDataSubscriber
+    @Override
+    public void onDriverDataChanged(List<Driver> drivers) {
+        // Обновляем View при изменении данных
+        view.displayDrivers(drivers);
+    }
+
+    @Override
+    public void onDriverAdded(Driver driver) {
+        view.addDriverToTable(driver);
+    }
+
+    @Override
+    public void onDriverUpdated(Driver driver) {
+        view.updateDriverInTable(driver);
+    }
+
+    @Override
+    public void onDriverDeleted(int driverId) {
+        view.removeDriverFromTable(driverId);
+    }
+
+    public void showMainWindow() {
+        view.setVisible(true);
+    }
+}
