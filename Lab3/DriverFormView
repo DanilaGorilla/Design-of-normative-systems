@@ -1,0 +1,124 @@
+package org.example.web.view;
+
+import org.example.Driver;
+import org.example.web.controller.DriverAddController;
+import javax.swing.*;
+import java.awt.*;
+
+
+public class DriverFormView extends JDialog {
+    private final JTextField firstNameField;
+    private final JTextField middleNameField;
+    private final JTextField lastNameField;
+    private final JTextField experienceField;
+    private final JTextField paymentField;
+    private final JButton saveButton;
+    private final JButton cancelButton;
+
+    private final DriverAddController controller;
+
+    public DriverFormView(DriverAddController controller, String title) {
+        super((Frame) null, title, true);
+        this.controller = controller;
+
+        setSize(400, 300);
+        setLocationRelativeTo(null);
+
+        // Создаем поля формы
+        firstNameField = new JTextField(20);
+        middleNameField = new JTextField(20);
+        lastNameField = new JTextField(20);
+        experienceField = new JTextField(20);
+        paymentField = new JTextField(20);
+
+        saveButton = new JButton("Сохранить");
+        cancelButton = new JButton("Отмена");
+
+        initComponents();
+        setupLayout();
+        setupListeners();
+    }
+
+    private void initComponents() {
+        // Настройка числовых полей
+        experienceField.setToolTipText("Опыт работы в годах (целое число)");
+        paymentField.setToolTipText("Оплата в рублях (число с дробной частью)");
+    }
+
+    private void setupLayout() {
+        setLayout(new BorderLayout());
+
+        // Панель с полями формы
+        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+
+        formPanel.add(new JLabel("Имя*:"));
+        formPanel.add(firstNameField);
+        formPanel.add(new JLabel("Отчество:"));
+        formPanel.add(middleNameField);
+        formPanel.add(new JLabel("Фамилия*:"));
+        formPanel.add(lastNameField);
+        formPanel.add(new JLabel("Опыт (лет)*:"));
+        formPanel.add(experienceField);
+        formPanel.add(new JLabel("Оплата (руб)*:"));
+        formPanel.add(paymentField);
+
+        // Панель с кнопками
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+
+        // Информационная панель
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        infoPanel.add(new JLabel("* - обязательные поля"));
+
+        add(formPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+        add(infoPanel, BorderLayout.NORTH);
+    }
+
+    private void setupListeners() {
+        saveButton.addActionListener(e -> {
+            String firstName = firstNameField.getText();
+            String middleName = middleNameField.getText();
+            String lastName = lastNameField.getText();
+            String experience = experienceField.getText();
+            String payment = paymentField.getText();
+
+            controller.onSave(firstName, middleName, lastName, experience, payment);
+        });
+
+        cancelButton.addActionListener(e -> {
+            controller.onCancel();
+        });
+
+        // Закрытие окна по крестику
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                onCancel();
+            }
+        });
+    }
+
+    public void clearForm() {
+        firstNameField.setText("");
+        middleNameField.setText("");
+        lastNameField.setText("");
+        experienceField.setText("");
+        paymentField.setText("");
+    }
+
+    private void onCancel() {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Вы действительно хотите отменить? Все несохраненные данные будут потеряны.",
+                "Подтверждение отмены",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            controller.onCancel();
+        }
+    }
+}
