@@ -2,6 +2,7 @@ package org.example.web.view;
 
 import org.example.Driver;
 import org.example.web.controller.DriverAddController;
+import org.example.web.controller.DriverEditController;
 import javax.swing.*;
 import java.awt.*;
 
@@ -15,9 +16,9 @@ public class DriverFormView extends JDialog {
     private final JButton saveButton;
     private final JButton cancelButton;
 
-    private final DriverAddController controller;
+    private final Object controller; // Может быть DriverAddController или DriverEditController
 
-    public DriverFormView(DriverAddController controller, String title) {
+    public DriverFormView(Object controller, String title, Driver driver) {
         super((Frame) null, title, true);
         this.controller = controller;
 
@@ -37,6 +38,11 @@ public class DriverFormView extends JDialog {
         initComponents();
         setupLayout();
         setupListeners();
+
+        // Если передан водитель, заполняем форму для редактирования
+        if (driver != null) {
+            fillForm(driver);
+        }
     }
 
     private void initComponents() {
@@ -85,11 +91,20 @@ public class DriverFormView extends JDialog {
             String experience = experienceField.getText();
             String payment = paymentField.getText();
 
-            controller.onSave(firstName, middleName, lastName, experience, payment);
+            // Вызываем соответствующий метод контроллера
+            if (controller instanceof DriverAddController) {
+                ((DriverAddController) controller).onSave(firstName, middleName, lastName, experience, payment);
+            } else if (controller instanceof DriverEditController) {
+                ((DriverEditController) controller).onSave(firstName, middleName, lastName, experience, payment);
+            }
         });
 
         cancelButton.addActionListener(e -> {
-            controller.onCancel();
+            if (controller instanceof DriverAddController) {
+                ((DriverAddController) controller).onCancel();
+            } else if (controller instanceof DriverEditController) {
+                ((DriverEditController) controller).onCancel();
+            }
         });
 
         // Закрытие окна по крестику
@@ -101,6 +116,15 @@ public class DriverFormView extends JDialog {
         });
     }
 
+
+    public void fillForm(Driver driver) {
+        firstNameField.setText(driver.getFirstName());
+        middleNameField.setText(driver.getMiddleName());
+        lastNameField.setText(driver.getLastName());
+        experienceField.setText(String.valueOf(driver.getExperience()));
+        paymentField.setText(String.valueOf(driver.getPayment()));
+    }
+    
     public void clearForm() {
         firstNameField.setText("");
         middleNameField.setText("");
@@ -118,7 +142,11 @@ public class DriverFormView extends JDialog {
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            controller.onCancel();
+            if (controller instanceof DriverAddController) {
+                ((DriverAddController) controller).onCancel();
+            } else if (controller instanceof DriverEditController) {
+                ((DriverEditController) controller).onCancel();
+            }
         }
     }
 }
