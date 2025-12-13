@@ -1,3 +1,4 @@
+// web/controller/DriverEditController.java
 package org.example.web.controller;
 
 import org.example.Driver;
@@ -5,8 +6,11 @@ import org.example.config.AppConfig;
 import org.example.web.view.DriverFormView;
 import javax.swing.*;
 
-
-public class DriverEditController {
+/**
+ * Контроллер для редактирования существующего водителя (MVC)
+ * Реализует интерфейс DriverFormController
+ */
+public class DriverEditController implements DriverFormController {
     private DriverFormView view;
     private final MainController mainController;
     private final int driverId;
@@ -24,17 +28,18 @@ public class DriverEditController {
 
     public void showForm() {
         if (view == null) {
-            view = new DriverFormView(this, "Редактирование водителя", originalDriver);
+            view = new DriverFormView(this);
         }
+        view.fillForm(originalDriver);
         view.setVisible(true);
     }
 
-
+    @Override
     public void onSave(String firstName, String middleName, String lastName,
                        String experienceStr, String paymentStr) {
 
         try {
-            // Валидация данных (такая же как при добавлении)
+            // Валидация данных
             validateInput(firstName, middleName, lastName, experienceStr, paymentStr);
 
             // Парсим числовые значения
@@ -62,7 +67,9 @@ public class DriverEditController {
                 AppConfig.getDriverPublisher().notifyDriverUpdated(updatedDriver);
 
                 // Закрываем форму
-                view.dispose();
+                if (view != null) {
+                    view.disposeView();
+                }
 
                 // Показываем сообщение об успехе
                 JOptionPane.showMessageDialog(view,
@@ -85,40 +92,61 @@ public class DriverEditController {
         }
     }
 
-
+    @Override
     public void onCancel() {
         if (view != null) {
-            view.dispose();
+            int result = JOptionPane.showConfirmDialog(
+                    view,
+                    "Вы действительно хотите отменить редактирование? Все несохраненные изменения будут потеряны.",
+                    "Подтверждение отмены",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (result == JOptionPane.YES_OPTION) {
+                view.disposeView();
+            }
         }
     }
 
+    @Override
+    public String getFormTitle() {
+        return "Редактирование водителя (ID: " + driverId + ")";
+    }
+
+    @Override
+    public boolean shouldPreFillForm() {
+        return true; // При редактировании форма должна быть заполнена
+    }
+
+    @Override
+    public void fillForm(Driver driver) {
+        if (view != null) {
+            view.fillForm(driver);
+        }
+    }
+
+    // ==================== Вспомогательные методы ====================
+
     private boolean isDuplicateDriver(Driver updatedDriver) {
-        // Получаем всех водителей из репозитория
         var repository = AppConfig.getDriverRepository();
 
-        // Используем декоратор для проверки существования
         try {
-            // Проверяем, есть ли водитель с такими же данными (кроме ID)
-            var allDrivers = repository.get_k_n_short_list(1000, 1); // Большое число чтобы получить всех
+            var allDrivers = repository.get_k_n_short_list(1000, 1);
 
             for (Driver existingDriver : allDrivers) {
-                // Пропускаем самого себя (водителя с тем же ID)
                 if (existingDriver.getDriverId() == driverId) {
                     continue;
                 }
 
-                // Проверяем совпадение всех полей
                 if (existingDriver.getFirstName().equals(updatedDriver.getFirstName()) &&
                         existingDriver.getMiddleName().equals(updatedDriver.getMiddleName()) &&
                         existingDriver.getLastName().equals(updatedDriver.getLastName()) &&
                         existingDriver.getExperience() == updatedDriver.getExperience() &&
                         Math.abs(existingDriver.getPayment() - updatedDriver.getPayment()) < 0.01) {
-
                     return true;
                 }
             }
         } catch (Exception e) {
-            // В случае ошибки считаем, что дубликата нет
             System.err.println("Ошибка при проверке дубликатов: " + e.getMessage());
         }
 
@@ -135,12 +163,10 @@ public class DriverEditController {
             throw new IllegalArgumentException("Фамилия не может быть пустой");
         }
 
-        // Валидация имени
         validateName(firstName.trim(), "Имя");
         validateName(middleName != null ? middleName.trim() : "", "Отчество");
         validateName(lastName.trim(), "Фамилия");
 
-        // Валидация числовых полей
         if (experience == null || experience.trim().isEmpty()) {
             throw new IllegalArgumentException("Опыт работы не может быть пустым");
         }
@@ -148,7 +174,6 @@ public class DriverEditController {
             throw new IllegalArgumentException("Оплата не может быть пустой");
         }
 
-        // Проверяем, можно ли спарсить experience
         try {
             int exp = Integer.parseInt(experience.trim());
             if (exp < 0) {
@@ -158,7 +183,6 @@ public class DriverEditController {
             throw new IllegalArgumentException("Опыт работы должен быть целым числом");
         }
 
-        // Проверяем, можно ли спарсить payment
         try {
             double pay = Double.parseDouble(payment.trim());
             if (pay < 0) {
