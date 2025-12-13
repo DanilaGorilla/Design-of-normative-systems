@@ -5,8 +5,9 @@ import org.example.config.AppConfig;
 import org.example.web.view.DriverFormView;
 import javax.swing.*;
 
+//Контроллер для добавления нового водителя (MVC) Реализует интерфейс DriverFormController
 
-public class DriverAddController {
+public class DriverAddController implements DriverFormController {
     private DriverFormView view;
     private final MainController mainController;
 
@@ -16,12 +17,13 @@ public class DriverAddController {
 
     public void showForm() {
         if (view == null) {
-            view = new DriverFormView(this, "Добавление водителя");
+            view = new DriverFormView(this);
         }
-        view.setVisible(true);
         view.clearForm();
+        view.setVisible(true);
     }
 
+    @Override
     public void onSave(String firstName, String middleName, String lastName,
                        String experienceStr, String paymentStr) {
 
@@ -44,7 +46,9 @@ public class DriverAddController {
                 AppConfig.getDriverPublisher().notifyDriverAdded(newDriver);
 
                 // Закрываем форму
-                view.dispose();
+                if (view != null) {
+                    view.disposeView();
+                }
 
                 // Показываем сообщение об успехе
                 JOptionPane.showMessageDialog(view,
@@ -67,12 +71,41 @@ public class DriverAddController {
         }
     }
 
-
+    @Override
     public void onCancel() {
         if (view != null) {
-            view.dispose();
+            int result = JOptionPane.showConfirmDialog(
+                    view,
+                    "Вы действительно хотите отменить добавление водителя?",
+                    "Подтверждение отмены",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (result == JOptionPane.YES_OPTION) {
+                view.disposeView();
+            }
         }
     }
+
+    @Override
+    public String getFormTitle() {
+        return "Добавление нового водителя";
+    }
+
+    @Override
+    public boolean shouldPreFillForm() {
+        return false; // При добавлении форма пустая
+    }
+
+    @Override
+    public void fillForm(Driver driver) {
+        // При добавлении не заполняем форму
+        if (view != null) {
+            view.clearForm();
+        }
+    }
+
+    // ==================== Вспомогательные методы ====================
 
     private void validateInput(String firstName, String middleName, String lastName,
                                String experience, String payment) {
@@ -107,7 +140,6 @@ public class DriverAddController {
             throw new IllegalArgumentException("Оплата не может быть отрицательной");
         }
     }
-
 
     private void validateName(String name, String fieldName) {
         if (name.length() > 50) {
