@@ -14,10 +14,23 @@ public class MainPageView {
                 <meta charset="UTF-8">
                 <title>Список водителей</title>
                 <link rel="stylesheet" href="/static/style.css">
+
+                <!-- JS ДЛЯ ОТКРЫТИЯ ВКЛАДКИ -->
+                <script>
+                    function openAddTab() {
+                        window.open('/add', '_blank');
+                    }
+                </script>
             </head>
             <body>
                 <div class="container">
                     <h1>Список водителей</h1>
+
+                    <!-- КНОПКА ДОБАВЛЕНИЯ -->
+                    <div class="actions">
+                        <button onclick="openAddTab()">Добавить водителя</button>
+                    </div>
+
                     <table>
                         <thead>
                             <tr>
@@ -37,9 +50,7 @@ public class MainPageView {
                                 <td>%s</td>
                                 <td>%d</td>
                                 <td>
-                                    <a href="/details?id=%d" target="_blank">
-                                        Открыть
-                                    </a>
+                                    <a href="/details?id=%d" target="_blank">Открыть</a>
                                 </td>
                             </tr>
             """.formatted(
