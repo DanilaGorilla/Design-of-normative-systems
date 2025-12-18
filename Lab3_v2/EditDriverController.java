@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.Driver;
 import org.example.mvc.model.DriverModel;
-import org.example.mvc.view.EditDriverView;
+import org.example.mvc.view.DriverFormView;
 
 import java.io.IOException;
 
@@ -17,9 +17,9 @@ public class EditDriverController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         int id = Integer.parseInt(req.getParameter("id"));
         model.selectDriver(id);
-
         Driver driver = model.getSelectedDriver();
-        send(resp, EditDriverView.renderForm(driver, null));
+
+        send(resp, DriverFormView.render(driver, null, "Редактировать водителя"));
     }
 
     @Override
@@ -35,7 +35,7 @@ public class EditDriverController extends HttpServlet {
 
             validate(firstName, lastName, experienceStr, paymentStr);
 
-            Driver updated = new Driver(
+            Driver driver = new Driver(
                     id,
                     firstName,
                     middleName,
@@ -44,24 +44,16 @@ public class EditDriverController extends HttpServlet {
                     Double.parseDouble(paymentStr)
             );
 
-            model.updateDriver(id, updated);
-
-            // PRG — redirect
+            model.updateDriver(id, driver);
             resp.sendRedirect("/");
 
         } catch (Exception e) {
-            int id = Integer.parseInt(req.getParameter("id"));
             Driver driver = model.getSelectedDriver();
-            send(resp, EditDriverView.renderForm(driver, e.getMessage()));
+            send(resp, DriverFormView.render(driver, e.getMessage(), "Редактировать водителя"));
         }
     }
 
-    private void validate(
-            String firstName,
-            String lastName,
-            String experience,
-            String payment
-    ) {
+    private void validate(String firstName, String lastName, String experience, String payment) {
         if (firstName == null || firstName.isBlank())
             throw new IllegalArgumentException("Имя не может быть пустым");
 
