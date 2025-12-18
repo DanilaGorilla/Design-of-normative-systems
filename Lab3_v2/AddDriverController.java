@@ -5,7 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.Driver;
 import org.example.mvc.model.DriverModel;
-import org.example.mvc.view.AddDriverView;
+import org.example.mvc.view.DriverFormView;
+
 import java.io.IOException;
 
 public class AddDriverController extends HttpServlet {
@@ -14,7 +15,7 @@ public class AddDriverController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        send(resp, AddDriverView.renderForm(null));
+        send(resp, DriverFormView.render(null, null, "Добавить водителя"));
     }
 
     @Override
@@ -26,7 +27,7 @@ public class AddDriverController extends HttpServlet {
             String experienceStr = req.getParameter("experience");
             String paymentStr = req.getParameter("payment");
 
-            validate(firstName, middleName, lastName, experienceStr, paymentStr);
+            validate(firstName, lastName, experienceStr, paymentStr);
 
             Driver driver = new Driver(
                     0,
@@ -38,21 +39,14 @@ public class AddDriverController extends HttpServlet {
             );
 
             model.addDriver(driver);
-
             resp.sendRedirect("/");
 
         } catch (Exception e) {
-            send(resp, AddDriverView.renderForm(e.getMessage()));
+            send(resp, DriverFormView.render(null, e.getMessage(), "Добавить водителя"));
         }
     }
 
-    private void validate(
-            String firstName,
-            String middleName,
-            String lastName,
-            String experience,
-            String payment
-    ) {
+    private void validate(String firstName, String lastName, String experience, String payment) {
         if (firstName == null || firstName.isBlank())
             throw new IllegalArgumentException("Имя не может быть пустым");
 
