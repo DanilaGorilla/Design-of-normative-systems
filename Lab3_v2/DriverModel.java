@@ -9,6 +9,7 @@ import java.util.List;
 
 public class DriverModel implements RepositorySubject {
 
+    private static DriverModel instance;
     private final MyDriver_rep_DB_Adapter repository;
     private final List<RepositoryObserver> observers = new ArrayList<>();
 
@@ -16,6 +17,28 @@ public class DriverModel implements RepositorySubject {
 
     public DriverModel() {
         this.repository = new MyDriver_rep_DB_Adapter(null);
+    }
+    public static synchronized DriverModel getInstance() {
+        if (instance == null) {
+            instance = new DriverModel();
+        }
+        return instance;
+    }
+
+    public boolean addDriver(Driver driver) {
+        return repository.addDriver(driver);
+    }
+    public boolean updateDriver(int id, Driver driver) {
+        boolean result = repository.replaceById(id, driver);
+        if (result) {
+            notifyObservers();
+        }
+        return result;
+    }
+    public boolean deleteDriver(int id) {
+        boolean result = repository.deleteById(id);
+        notifyObservers();
+        return result;
     }
 
     public List<Driver> getPage(int k, int n) {
@@ -29,6 +52,11 @@ public class DriverModel implements RepositorySubject {
 
     public Driver getSelectedDriver() {
         return selectedDriver;
+    }
+
+    @Override
+    public void removeObserver(RepositoryObserver observer) {
+        observers.remove(observer);
     }
 
     @Override
