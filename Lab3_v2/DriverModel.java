@@ -8,6 +8,7 @@ import org.example.observer.RepositoryObserver;
 import org.example.observer.RepositorySubject;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -58,6 +59,14 @@ public class DriverModel implements RepositorySubject {
             notifyObservers();
         }
         return result;
+    }
+    public List<Driver> getFilteredSortedPage(
+            int k,
+            int n,
+            Predicate<Driver> filter,
+            Comparator<Driver> sorter
+    ) {
+        return repository.get_k_n_short_list(k, n, filter, sorter);
     }
 
     public List<Driver> getPage(int k, int n) {
