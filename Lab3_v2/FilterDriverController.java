@@ -1,13 +1,11 @@
 package org.example.mvc.controller;
 
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 import org.example.Driver;
 import org.example.mvc.model.DriverModel;
 import org.example.mvc.view.MainPageView;
-
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -19,27 +17,42 @@ public class FilterDriverController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         String type = req.getParameter("type");
-        Predicate<Driver> filter = null;
+        String sort = req.getParameter("sort");
 
+        Predicate<Driver> filter = null;
+        Comparator<Driver> comparator = null;
+
+        //Фильтр
         if (type != null) {
             switch (type) {
                 case "exp_gt_3" ->
                         filter = d -> d.getExperience() > 3;
-
                 case "salary_5000" ->
                         filter = d -> d.getPayment() == 5000;
-
                 case "lastname_b" ->
                         filter = d -> d.getLastName() != null &&
                                 d.getLastName().contains("Б");
             }
         }
 
-        List<Driver> drivers = (filter == null)
-                ? model.getPage(10, 1)
-                : model.getFilteredPage(10, 1, filter);
+        //Сортировка
+        if (sort != null) {
+            switch (sort) {
+                case "exp_asc" ->
+                        comparator = Comparator.comparingInt(Driver::getExperience);
+                case "exp_desc" ->
+                        comparator = Comparator.comparingInt(Driver::getExperience).reversed();
+                case "pay_asc" ->
+                        comparator = Comparator.comparingDouble(Driver::getPayment);
+                case "pay_desc" ->
+                        comparator = Comparator.comparingDouble(Driver::getPayment).reversed();
+            }
+        }
 
-        send(resp, MainPageView.render(drivers, type));
+        List<Driver> drivers =
+                model.getFilteredSortedPage(10, 1, filter, comparator);
+
+        send(resp, MainPageView.render(drivers, type, sort));
     }
 
     private void send(HttpServletResponse resp, String html) throws IOException {
